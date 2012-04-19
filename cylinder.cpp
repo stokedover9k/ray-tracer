@@ -47,7 +47,7 @@ Cylinder::Cylinder( const Vec3& p1, const Vec3& p2, double r, const Shape& s )
 
   cout << "c: " << shape.inv_transform() * Vec4(0,0,1,1) << endl;
 
-  throw "exit";
+  throw "exit: cylinder - matrix test code";
 
 
 
