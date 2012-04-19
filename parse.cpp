@@ -305,6 +305,19 @@ namespace SceneParser {
     printf("\tinterior { ior %.3g }\n", modifiers->interior.ior);
   }
 
+  Shape MakeShape( struct ModifierStruct* modifiers ) {
+    Color&    p = modifiers->pigment.color;
+    Matrix4d& t = modifiers->transform;
+    Finish&   f = modifiers->finish;
+
+    return Shape( ::Matrix( t.val ).transpose(),
+		  ::Pigment(p.r, p.g, p.b, p.f),
+		  ::Finish( f.ambient, f.diffuse, f.phong, f.phong_size,
+			    f.metallic, f.reflection ),
+		  modifiers->interior.ior
+		  );
+  }
+
 
   void ParseCamera(Scene& scene) { 
     /* these are variables where we store the information about the
@@ -407,7 +420,7 @@ namespace SceneParser {
     printf("\n}\n");
   }
 
-  void ParseSphere() { 
+  void ParseSphere(Scene& scene) { 
     struct Vector center; 
     double radius; 
     struct ModifierStruct modifiers;
@@ -432,9 +445,13 @@ namespace SceneParser {
     PrintVect(center); printf(", %.3g\n", radius);
     PrintModifiers(&modifiers);
     printf("\n}\n");
+
+    scene.add_shape( new Sphere( Vec3(center.x, center.y, center.z),
+				 radius,
+				 MakeShape( &modifiers ) ) );
   }
 
-  void ParseBox() { 
+  void ParseBox(Scene& scene) { 
     struct Vector corner1, corner2; 
     struct ModifierStruct modifiers;
     InitModifiers(&modifiers);
@@ -458,9 +475,12 @@ namespace SceneParser {
     PrintModifiers(&modifiers);
     printf("\n}\n");
 
+    scene.add_shape( new Box( Vec3(corner1.x, corner1.y, corner1.z),
+			      Vec3(corner2.x, corner2.y, corner2.z),
+			      MakeShape( &modifiers ) ) );
   }
 
-  void ParseCylinder() { 
+  void ParseCylinder(Scene& scene) { 
     struct Vector base_point , cap_point ;
     double radius; 
     struct ModifierStruct modifiers;
@@ -487,6 +507,11 @@ namespace SceneParser {
     PrintVect(cap_point); printf(", %.3g\n", radius); 
     PrintModifiers(&modifiers);
     printf("\n}\n");
+
+    scene.add_shape( new Cylinder( Vec3(base_point.x, base_point.y, base_point.z),
+				   Vec3(cap_point.x, cap_point.y, cap_point.z),
+				   radius,
+				   MakeShape( &modifiers) ) );
   }
 
   void  ParseCone() { 
@@ -604,9 +629,9 @@ namespace SceneParser {
       switch(Token.id) { 
       case T_CAMERA:   ParseCamera(s);   break;
       case T_POLYGON:  ParsePolygon();  break;
-      case T_SPHERE:   ParseSphere();   break;
-      case T_BOX:      ParseBox();      break;
-      case T_CYLINDER: ParseCylinder(); break;
+      case T_SPHERE:   ParseSphere(s);   break;
+      case T_BOX:      ParseBox(s);      break;
+      case T_CYLINDER: ParseCylinder(s); break;
       case T_CONE:     ParseCone();     break;
       case T_QUADRIC:  ParseQuadric();  break;
       case T_LIGHT_SOURCE:  ParseLightSource(s);  break;

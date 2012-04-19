@@ -13,3 +13,10 @@ void Camera::_adjust_up_dir(void) {
   _up = _up - _up.dot(view_dir) / view_dir.dot() * view_dir;
 }
 
+float Camera::a_ratio(void) const {
+  return _up.l2() / _right.l2();
+}
+
+Vec3 Camera::view_dir(void) const {
+  return (_look_at - _loc).dir();
+}

@@ -36,18 +36,24 @@ class Shape {
 
   Shape( const Matrix&  transform = Matrix(),
 	 const Pigment& p         = Pigment(0,0,0,0),
-	 const Finish& f          = Finish() );
+	 const Finish&  f         = Finish(),
+	 float ior                = 1.0 );
 
-  virtual bool intersect( const Ray& inc,
-			  Ray& returned,
-			  Vec3& hit_point,
-			  Vec3& normal,
-			  size_t trace_depth ) const = 0;
+  // @param ip: origin at the intersection and direction as the normal
+  virtual bool intersect( const Ray& inc, Ray& ip ) const;
   
+  Ray reflection_ray( const Ray& inc, const Ray ip ) const;
+
+  Matrix&       transform    (void)        { return _t; }
+  const Matrix& transform    (void) const  { return _t; }
+  Matrix&       inv_transform(void)        { return _inv_t; }
+  const Matrix& inv_transform(void) const  { return _inv_t; }
+
  private:
-  Matrix  _t;
+  Matrix  _t, _inv_t;
   Pigment _p;
   Finish  _f;
+  float _ior;
   
 };
 

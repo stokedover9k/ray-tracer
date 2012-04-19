@@ -19,6 +19,8 @@ class Camera {
   const Vec3& up      (void) const   { return _up;      }
   const Vec3& right   (void) const   { return _right;   }
   float       angle   (void) const   { return _angle;   }
+  float       a_ratio (void) const;
+  Vec3        view_dir(void) const;
   
   Vec3&       loc     (void)         { return _loc;     }
   Vec3&       look_at (void)         { return _look_at; }
