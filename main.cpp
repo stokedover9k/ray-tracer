@@ -94,9 +94,10 @@ int main(int argc, char* argv[])
 
       for( int j=0; j<Params::scr_height; j++ ) {
 	for( int i=0; i<Params::scr_width; i++ ) {
-
+	  
 	  const Color& color = scene.trace_ray( scene.pixel_ray(i, j), 0 );
 	  pxl_ptr = storePixel(pxl_ptr, color);
+
 	}
       }
     }

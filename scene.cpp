@@ -37,7 +37,9 @@ Color Scene::trace_ray( const Ray& ray, size_t depth )
       }
     }
 
-  return Color( c, 0, 0 );
+  if( c >= 0 )
+    return Color( c, 0, 0 );
+  return Color( 0, c, 0 );
 }
 
 Scene::Scene(unsigned int N, unsigned int M) : _N(N), _M(M)
@@ -64,7 +66,7 @@ Ray Scene::pixel_ray( unsigned int i, unsigned int j )
   double h = _cam.a_ratio() * w;
 
   double w_disp = (0.5 + i) * 2*w/_N - w;
-  double h_disp = h - (0.5 + j) * 2*h/_M;
+  double h_disp = (0.5 + j) * 2*h/_M - h;
 
   Vec3 img_center( _cam.loc() + n * _cam.view_dir() );
   Vec3 pxl_center( h_disp * _cam.up() 
