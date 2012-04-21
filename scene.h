@@ -32,15 +32,17 @@ class Scene {
   void set_global( SceneEnum param, float val );
   float get_global( SceneEnum param ) const;
 
-  Color trace_ray( const Ray&, size_t depth=0 );
+  bool trace_ray( const Ray&, Color& color, size_t depth=0 );
 
   Ray pixel_ray( unsigned int i, unsigned int j );
 
  protected:
+  const Shape* intersect_all( const Ray& ray, Ray& intersection ) const;
   Color calculate_lighting( const Vec3& inc_dir,
 			    const Ray& normal,
 			    const Vec3& reflect_dir,
-			    const Shape* shape_ptr ) const;
+			    const Shape* shape_ptr,
+			    const LightSet& visible_lights ) const;
 
  private:
   LightSet _lights;
