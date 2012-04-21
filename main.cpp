@@ -33,7 +33,7 @@ namespace Params {
 ///////////////////////////////////////////////////////////////////////////////
 
 std::ostream& operator << (std::ostream& s, const Ray& r) {
-  s << "R{" << r.origin() << " -> " << r.dir() << " (" << r.color() << ")}";
+  s << "R{" << r.from() << " -> " << r.dir() << " (" << r.color() << ")}";
   return s;
 }
 

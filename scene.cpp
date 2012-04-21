@@ -26,7 +26,7 @@ Color Scene::trace_ray( const Ray& ray, size_t depth )
       Ray ip;                           // intersection point
   
       if( s->intersect( ray, ip ) ) {
-	double ip_dist = (ip.origin() - ray.origin()).l2();
+	double ip_dist = (ip.from() - ray.from()).l2();
 	if( nearest_s == NULL || ip_dist < nearest_dist ) 
 	  {
 	    nearest_s = s;
@@ -45,7 +45,7 @@ Color Scene::trace_ray( const Ray& ray, size_t depth )
 				       nearest_s);
       return color;
     }
-
+  
   return Color( 0, -c, 0 );
 }
 
@@ -65,7 +65,7 @@ Color Scene::calculate_lighting( const Vec3& V, const Ray& N, const Vec3& R,
        l_itr != _lights.end(); l_itr++ ) {
     const Light& light = **l_itr;
   
-    const Vec3& L = (light.loc() - N.origin()).dir();
+    const Vec3& L = (light.loc() - N.from()).dir();
     double LdotN = L.dot(N.dir());
     double LdotR = L.dot(-R.dir());
 

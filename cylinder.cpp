@@ -18,14 +18,14 @@ Cylinder::Cylinder( const Vec3& p1, const Vec3& p2, double r, const Shape& s )
 
 bool Cylinder::intersect_unit_circle( const Ray& inc, Ray& hit )
 {
-  double Z = inc.origin().z();
+  double Z = inc.from().z();
   double z = inc.dir().z();
 
-  Vec3 v = inc.origin() - inc.dir() * Z / z;
+  Vec3 v = inc.from() - inc.dir() * Z / z;
   v.z() = 0;
 
   if( v.l2() > 1+ZERO ) return false;
-  hit.origin() = v;
+  hit.from() = v;
   return true;
 }
 
@@ -38,7 +38,7 @@ bool Cylinder::intersect( const Ray& inc, Ray& hit ) const
   const Vec3& axis = Vec3(0,0,1);
 
   const Ray& r1 = inc.transform( inv_transform() );
-  const Ray& r2 = Ray(r1.origin() - axis, r1.dir());
+  const Ray& r2 = Ray(r1.from() - axis, r1.dir());
   Ray h1, h2, h3;      //hits
   double t1 = DBL_MAX;
   double t2 = DBL_MAX;
@@ -47,7 +47,7 @@ bool Cylinder::intersect( const Ray& inc, Ray& hit ) const
 
   //----- intersect tube -------//
 
-  const Vec3& p = r1.origin();
+  const Vec3& p = r1.from();
   const Vec3& v = r1.dir();
   const Vec3& pa = Vec3(0,0,0);
   const Vec3& va = Vec3(axis);
@@ -60,11 +60,11 @@ bool Cylinder::intersect( const Ray& inc, Ray& hit ) const
 
   if( D > 0 ) {
     double ttmp = (-B - sqrt(D)) / 2.0 / A;
-    h3.origin() = p + ttmp * v;
+    h3.from() = p + ttmp * v;
         
-    if( h3.origin().z() > 0-ZERO && h3.origin().z() < 1+ZERO ) {
+    if( h3.from().z() > 0-ZERO && h3.from().z() < 1+ZERO ) {
       t3 = ttmp;
-      h3.dir() = Vec3(h3.origin().x(), h3.origin().y(), 0);
+      h3.dir() = Vec3(h3.from().x(), h3.from().y(), 0);
       if( t3 > ZERO )   inter3 = true;
     }
   }
@@ -74,14 +74,14 @@ bool Cylinder::intersect( const Ray& inc, Ray& hit ) const
   if( intersect_unit_circle( r1, h1 ) ) {
     h1.dir() = -axis;
 
-    t1 = (h1.origin() - r1.origin()).l2();
+    t1 = (h1.from() - r1.from()).l2();
     inter1 = true;
   }
 
   if( intersect_unit_circle( r2, h2 ) ) {
     h2.dir() = axis;
-    h2.origin() += axis;
-    t2 = (h2.origin() - r2.origin()).l2();
+    h2.from() += axis;
+    t2 = (h2.from() - r2.from()).l2();
 
     inter2 = true;
   }

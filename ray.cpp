@@ -9,6 +9,6 @@ Ray Ray::transform( const Matrix& t ) const {
 }
 
 Ray Ray::reflection( const Ray& N ) const {
-  return Ray( N.origin(),
+  return Ray( N.from(),
 	      (dir() - 2 * N.dir() * ( dir().dot(N.dir()) )).dir() );
 }
