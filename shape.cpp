@@ -22,8 +22,10 @@ bool Shape::intersect( const Ray& inc, Ray& hit_point ) const
   throw "Shape::intersect(): implementation missing.";
 }
 
+/**
 Ray Shape::reflection_ray( const Ray& inc, const Ray ip ) const 
 {
   return Ray( ip.origin(), 
 	      inc.dir() - 2 * ip.dir() * ( inc.dir().dot(ip.dir()) ) );
 }
+//**/

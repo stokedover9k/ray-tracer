@@ -597,7 +597,7 @@ namespace SceneParser {
     printf("\n}\n");
   } 
 
-  void ParseGlobalSettings() { 
+  void ParseGlobalSettings(Scene& scene) { 
     struct Color ambient;
     ambient.r = 0; ambient.g = 0; ambient.b = 0; ambient.f =0;     
     ParseLeftCurly();
@@ -617,7 +617,11 @@ namespace SceneParser {
     }
     printf("global_settings {\n");
     printf("\tambient_light {"); PrintColor(&ambient);
-    printf("\n}\n");    
+    printf("\n}\n");
+
+    scene.set_global(Scene::GLOBAL_AMBIENT_R, ambient.r);
+    scene.set_global(Scene::GLOBAL_AMBIENT_G, ambient.g);
+    scene.set_global(Scene::GLOBAL_AMBIENT_B, ambient.b);
   }
 
   /* main parsing function calling functions to parse each object;  */
@@ -635,7 +639,7 @@ namespace SceneParser {
       case T_CONE:     ParseCone();     break;
       case T_QUADRIC:  ParseQuadric();  break;
       case T_LIGHT_SOURCE:  ParseLightSource(s);  break;
-      case T_GLOBAL_SETTINGS: ParseGlobalSettings(); break;
+      case T_GLOBAL_SETTINGS: ParseGlobalSettings(s); break;
       default:         Error("Unknown statement");
       }
       GetToken();

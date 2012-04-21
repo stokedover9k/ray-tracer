@@ -19,21 +19,35 @@ class Scene {
   typedef std::set<Shape*> ShapeSet;
   
  public:
+  enum SceneEnum {
+    GLOBAL_AMBIENT_R, GLOBAL_AMBIENT_G, GLOBAL_AMBIENT_B,
+  };
+
   Scene(unsigned int N, unsigned int M);
   ~Scene();
 
   void add_shape( Shape* );
   void add_light( Light* );
   void set_cam( const Camera& cam );
+  void set_global( SceneEnum param, float val );
+  float get_global( SceneEnum param ) const;
 
   Color trace_ray( const Ray&, size_t depth=0 );
 
   Ray pixel_ray( unsigned int i, unsigned int j );
-  
+
+ protected:
+  Color calculate_lighting( const Vec3& inc_dir,
+			    const Ray& normal,
+			    const Vec3& reflect_dir,
+			    const Shape* shape_ptr ) const;
+
  private:
   LightSet _lights;
   ShapeSet _shapes;
   Camera   _cam;
+
+  Color _global_amb; //ambient light in the scene
 
   unsigned int _N, _M;
 };

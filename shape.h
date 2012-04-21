@@ -1,6 +1,8 @@
 #ifndef __SHAPE_H__
 #define __SHAPE_H__
 
+#include <float.h>
+
 #include "headers.h"
 #include "ray.h"
 
@@ -42,12 +44,15 @@ class Shape {
   // @param ip: origin at the intersection and direction as the normal
   virtual bool intersect( const Ray& inc, Ray& ip ) const;
   
-  Ray reflection_ray( const Ray& inc, const Ray ip ) const;
+  //Ray reflection_ray( const Ray& inc, const Ray ip ) const;
 
   Matrix&       transform    (void)        { return _t; }
   const Matrix& transform    (void) const  { return _t; }
   Matrix&       inv_transform(void)        { return _inv_t; }
   const Matrix& inv_transform(void) const  { return _inv_t; }
+
+  const Finish&  finish (void) const { return _f; }
+  const Pigment& pigment(void) const { return _p; }
 
  private:
   Matrix  _t, _inv_t;

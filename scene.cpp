@@ -13,10 +13,10 @@ Color Scene::trace_ray( const Ray& ray, size_t depth )
   // compute resulting RGB val with lighting model
   //---------------------------------------------------------------------------
   
-  //Shape& s = **_shapes.begin();     // FIXXX this
-  
+  // find nearest intersection
   float c = 0;
   Ray nearest_ip;
+  //Ray nearest_ray;
   const Shape* nearest_s = NULL;
   double nearest_dist;
 
@@ -32,17 +32,69 @@ Color Scene::trace_ray( const Ray& ray, size_t depth )
 	    nearest_s = s;
 	    nearest_ip = ip;
 	    nearest_dist = ip_dist;
-	    c = - ip.dir().dot(ray.dir());
+	    //c = - ip.dir().dot(ray.dir());
 	  }
       }
     }
 
-  if( c >= 0 )
-    return Color( c, 0, 0 );
-  return Color( 0, c, 0 );
+  // calculate color
+  if( nearest_s )
+    {
+      Color color = calculate_lighting(ray.dir(), nearest_ip, 
+				       ray.reflection(nearest_ip).dir(),
+				       nearest_s);
+      return color;
+    }
+
+  return Color( 0, -c, 0 );
 }
 
-Scene::Scene(unsigned int N, unsigned int M) : _N(N), _M(M)
+Color Scene::calculate_lighting( const Vec3& V, const Ray& N, const Vec3& R,
+				 const Shape* shape_p ) const {
+  const Finish&  fin = (shape_p)->finish();
+  const Pigment& pgm = (shape_p)->pigment();
+  
+  Color amb(0,0,0);
+  for( size_t C = 0; C < 3; C++ ) {
+    amb(C) = (1 - pgm.w()) * fin.ambient * pgm(C) * _global_amb(C);
+  }
+  //std::cout << amb << std::endl;
+
+  Color col_i(0,0,0);
+  for( LightSet::const_iterator l_itr = _lights.begin(); 
+       l_itr != _lights.end(); l_itr++ ) {
+    const Light& light = **l_itr;
+  
+    const Vec3& L = (light.loc() - N.origin()).dir();
+    double LdotN = L.dot(N.dir());
+    double LdotR = L.dot(-R.dir());
+
+    for( size_t C=0; C<3; C++ ) {
+      col_i(C) 
+	+= (
+	    (1 - pgm.w()) 
+	    *
+	    light.color()(C) 
+	    * 
+	    (fin.diffuse 
+	     * pgm(C) 
+	     * (LdotN > ZERO ? LdotN : 0)
+	     + fin.phong 
+	     * ( fin.metallic > ZERO ? pgm(C) : light.color()(C) )
+	     * pow( (LdotR > ZERO ? LdotR : 0) , fin.phong_size ) 
+	     )
+	    );
+    }
+  }
+  
+  // calculate using reflected and refracted rays' colors
+  Color refl_refr(0,0,0);  // FIXXX - calculation missing
+
+  //return (amb + col_i + refl_refr).max(Color(1,1,1));
+  return (amb + col_i ).min(Color(1,1,1));
+}
+
+Scene::Scene(unsigned int N, unsigned int M) : _N(N), _M(M), _global_amb(0,0,0)
 {  }
 
 Scene::~Scene() 
@@ -56,6 +108,29 @@ Scene::~Scene()
 void Scene::add_shape( Shape* s )  { _shapes.insert(s); }
 void Scene::add_light( Light* l )  { _lights.insert(l); }
 void Scene::set_cam( const Camera& cam )  { _cam = cam; }
+
+void Scene::set_global( SceneEnum param, float val ) {
+  switch( param )
+    {
+    case GLOBAL_AMBIENT_R:   _global_amb.x() = val;  break;
+    case GLOBAL_AMBIENT_G:   _global_amb.y() = val;  break;
+    case GLOBAL_AMBIENT_B:   _global_amb.z() = val;  break;
+    default:
+      throw "Scene::set_global(Scene::SceneEnum, float): invalid field requested";
+    };
+}
+
+float Scene::get_global( SceneEnum param ) const {
+  switch( param )
+    {
+    case GLOBAL_AMBIENT_R:  return _global_amb.x();
+    case GLOBAL_AMBIENT_G:  return _global_amb.y();
+    case GLOBAL_AMBIENT_B:  return _global_amb.z();
+    default:
+      throw "Scene::get_global(Scene::SceneEnum): invalid field requested";
+    };
+}
+
 
 Ray Scene::pixel_ray( unsigned int i, unsigned int j ) 
 {

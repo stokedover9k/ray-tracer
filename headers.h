@@ -7,7 +7,7 @@
 
 #include "hmatrix.h"
 
-#define ZERO 0.0000001
+#define ZERO 0.00001
 
 typedef CVec3T<double> Vec3;
 typedef CVec4T<double> Vec4;

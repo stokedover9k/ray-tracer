@@ -19,6 +19,7 @@ class Ray {
   Color&         color (void)         { return _c; }
 
   Ray transform( const Matrix& ) const;
+  Ray reflection( const Ray& N ) const;
   
  private:
   Vec3 _o, _d;   // origin, direction

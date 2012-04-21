@@ -9,7 +9,7 @@ Sphere::Sphere( const Vec3& l, double r, const Shape& s ) :
 bool Sphere::intersect( const Ray& inc, Ray& hit ) const 
 {
   const Ray& ray = inc.transform( inv_transform() );
-  Vec3 d = _l - ray.origin();
+  const Vec3& d = _l - ray.origin();
   double v = d.dot(ray.dir());
   double l = d.dot() - v*v;
 
