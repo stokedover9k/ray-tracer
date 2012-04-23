@@ -25,6 +25,10 @@ bool operator== (const CVec4T<T>& v1, const CVec4T<T>& v2) {
   return v1(0) == v2(0) && v1(1) == v2(1) && v1(2) == v2(2) && v1(3) == v2(3);
 }
 
+template <class T>
+bool operator!= (const CVec4T<T>& v1, const CVec4T<T>& v2 ) {
+  return v1(0) != v2(0) || v1(1) != v2(1) || v1(2) != v2(2) || v1(3) != v2(3);
+}
 
 //: template for vectors of length 4
 template <class T>

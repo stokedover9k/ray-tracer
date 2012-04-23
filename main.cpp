@@ -111,9 +111,15 @@ int main(int argc, char* argv[])
       else throw "failed to open the input file.";
       fclose( infile );
     }
+  catch (const char* e) 
+    {
+      cerr << "ERROR: (while parsing and creating scene) " << e << "\nExiting(1)"
+	   << endl;
+      exit(1);
+    }
   catch (...) 
     {
-      cerr << "ERROR: while parsing and creating scene.\nExiting (1)" << endl;
+      cerr << "ERROR: (while parsing and creating scene).\nExiting (1)" << endl;
       exit(1);
     }
 

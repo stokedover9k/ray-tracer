@@ -28,6 +28,11 @@ bool operator== (const CVec3T<T>& v1, const CVec3T<T>& v2) {
   return v1(0) == v2(0) && v1(1) == v2(1) && v1(2) == v2(2);
 }
 
+template <class T>
+bool operator!= (const CVec3T<T>& v1, const CVec3T<T>& v2 ) {
+  return v1(0) != v2(0) || v1(1) != v2(1) || v1(2) != v2(2);
+}
+
 template <class F>
 class CVec3T {
 public:
@@ -168,8 +173,8 @@ inline CVec3T<F> abs( const CVec3T<F>& a ) {
 template <class F> 
 inline CVec3T<F> cross( const CVec3T<F>& a, const CVec3T<F>& b )
 { return CVec3T<F>( a.y() * b.z() - a.z() * b.y(),
-	       a.z() * b.x() - a.x() * b.z(),
-	       a.x() * b.y() - a.y() * b.x() ); }
+		    a.z() * b.x() - a.x() * b.z(),
+		    a.x() * b.y() - a.y() * b.x() ); }
 
 
 
