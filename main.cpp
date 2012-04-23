@@ -38,7 +38,7 @@ void parse_args(int argc, char *argv[], const Scene& scene) {
   for( int argn = ARGS::OPTIONAL; argn < argc; argn++ ) 
     {
       if( strcmp(argv[argn], "-w") == 0 ) {
-	if( ++argn == argc ) throw "pixel WIDTH indicated, but not provided";
+	if( ++argn == argc ) throw "pixel WIDTH indicated, but not provided.";
 	Params::scr_width = atoi(argv[argn]);
 	if( !resized_screen ) 
 	  Params::scr_height = Params::scr_width * (scene.aspect_ratio()+ZERO);
@@ -46,7 +46,7 @@ void parse_args(int argc, char *argv[], const Scene& scene) {
       } 
 
       else if( strcmp(argv[argn], "-h") == 0 ) {
-	if( ++argn == argc ) throw "pixel HEIGHT indicated, but not provided";
+	if( ++argn == argc ) throw "pixel HEIGHT indicated, but not provided.";
 	Params::scr_height = atoi(argv[argn]);
 	if( !resized_screen )
 	  Params::scr_width = Params::scr_height / (scene.aspect_ratio()-ZERO);
@@ -54,13 +54,17 @@ void parse_args(int argc, char *argv[], const Scene& scene) {
       }
 
       else if( strcmp(argv[argn], "-o") == 0 ) {
-	if( ++argn == argc ) throw "OUTPUT_FILE indicated, but not provided";
+	if( ++argn == argc ) throw "OUTPUT FILE indicated, but not provided.";
 	Params::output_file_name = argv[argn];
       }
 
       else if( strcmp(argv[argn], "-r") == 0 ) {
-	if( ++argn == argc ) throw "MAXIMUM_RAY_DEPTH indicated, but not provided";
+	if( ++argn == argc ) throw "MAX RAY DEPTH indicated, but not provided";
 	Params::max_ray_depth = atoi(argv[argn]);
+      }
+
+      else {
+	throw "unknown argument.";
       }
     }
 

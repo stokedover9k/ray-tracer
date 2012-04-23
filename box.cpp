@@ -18,8 +18,8 @@ bool Box::_intersect( const Ray& inc, Ray& hit ) const {
     size_t z = (2+i) % 3;
 
     double d = -inc.dir()(z);
-    double D1 = (inc.from()(z) - _c1(z)) / d;
-    double D2 = (inc.from()(z) - _c2(z)) / d;
+    double D1 = (inc.from()(z) - _c1(z)) / d - ZERO;
+    double D2 = (inc.from()(z) - _c2(z)) / d - ZERO;
 
     Vec3 q1 = inc.from() + inc.dir() * D1;
     Vec3 q2 = inc.from() + inc.dir() * D2;

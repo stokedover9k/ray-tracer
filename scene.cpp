@@ -61,7 +61,7 @@ const Shape* Scene::intersect_all( const Ray& inc, Ray& nearest_ip ) const {
       if( s->intersect( inc, ip ) ) {
 	if( inc.dir().dot( ip.from() - inc.from()) < ZERO )  continue;
 	double ip_dist = (ip.from() - inc.from()).l2();
-	if( nearest_s == NULL || ip_dist < nearest_dist ) {
+	if( nearest_s == NULL || ip_dist < nearest_dist - ZERO ) {
 	  nearest_s = s;
 	  nearest_ip = ip;
 	  nearest_dist = ip_dist;

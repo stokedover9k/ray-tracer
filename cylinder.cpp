@@ -19,9 +19,9 @@ Cylinder::Cylinder( const Vec3& p1, const Vec3& p2, double r, const Shape& s )
 bool Cylinder::intersect_unit_circle( const Ray& inc, Ray& hit )
 {
   double Z = inc.from().z();
-  double z = inc.dir().z();
+  double z = -inc.dir().z();
 
-  Vec3 v = inc.from() - inc.dir() * Z / z;
+  Vec3 v = inc.from() + inc.dir() * Z / z;
   v.z() = 0;
 
   if( v.l2() > 1 ) return false;
@@ -73,7 +73,6 @@ bool Cylinder::_intersect( const Ray& inc, Ray& hit ) const
 
   if( intersect_unit_circle( r1, h1 ) ) {
     h1.dir() = -axis;
-
     t1 = (h1.from() - r1.from()).l2();
     inter1 = true;
   }
@@ -82,7 +81,6 @@ bool Cylinder::_intersect( const Ray& inc, Ray& hit ) const
     h2.dir() = axis;
     h2.from() += axis;
     t2 = (h2.from() - r2.from()).l2();
-
     inter2 = true;
   }
 
@@ -106,7 +104,11 @@ bool Cylinder::_intersect( const Ray& inc, Ray& hit ) const
       hit = h3;
     }
   }
-
-  return inter1 || inter2 || inter3;
+  
+  if( inter1 || inter2 || inter3 ) {
+    hit.from() += hit.dir() * ZERO;
+    return true;
+  }
+  return false;
 }
 
