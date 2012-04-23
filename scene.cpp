@@ -2,6 +2,7 @@
 
 bool Scene::trace_ray( const Ray& ray, Color& color, size_t depth )
 {
+  if( depth == 0 ) return false;
   //---------------------------------------------------------------------------
   // find nearest intersection
 
@@ -28,16 +29,20 @@ bool Scene::trace_ray( const Ray& ray, Color& color, size_t depth )
 	 litr != _lights.end(); litr++ )
       {
 	Ray tmp_normal;
-	const Light& light = **litr;
+	const Light& light = *litr;
 	if( ! intersect_all( Ray(ip.from(), (light.loc() - ip.from()).dir()), 
 			     tmp_normal ) ) 
 	  {
-	    visible.insert( *litr );
+	    visible.push_back( *litr );
 	  }
       }
 
-    color = calculate_lighting(ray.dir(), ip, ray.reflection(ip).dir(), 
-			       shape, visible);
+    Ray R( ray.reflection(ip) );
+    Color R_color(0,0,0);
+    trace_ray( R, R_color, depth-1);
+    R.color() = R_color;
+    
+    color = calculate_lighting(ray.dir(), ip, R, shape, visible);
     return true;
   }
   
@@ -67,12 +72,14 @@ const Shape* Scene::intersect_all( const Ray& inc, Ray& nearest_ip ) const {
   return nearest_s;
 }
 
-Color Scene::calculate_lighting( const Vec3& V, const Ray& N, const Vec3& R,
+Color Scene::calculate_lighting( const Vec3& V, const Ray& N, const Ray& R,
 				 const Shape* shape_p, 
 				 const LightSet& visible ) const {
+  //if( V.dot(N.dir()) > 0 ) return Color(0.2, 0.2, 0.2);
+
   const Finish&  fin = (shape_p)->finish();
   const Pigment& pgm = (shape_p)->pigment();
-  
+
   Color amb(0,0,0);
   for( size_t C = 0; C < 3; C++ ) {
     amb(C) = (1 - pgm.w()) * fin.ambient * pgm(C) * _global_amb(C);
@@ -81,28 +88,26 @@ Color Scene::calculate_lighting( const Vec3& V, const Ray& N, const Vec3& R,
   Color col_i(0,0,0);
   for( LightSet::const_iterator l_itr = visible.begin(); 
        l_itr != visible.end(); l_itr++ ) {
-    const Light& light = **l_itr;
+    const Light& light = *l_itr;
   
     const Vec3& L = (light.loc() - N.from()).dir();
     double scale = 1.0 - pgm.w();
     double LdotN = L.dot(N.dir());   if( LdotN < ZERO ) LdotN = 0;
-    double LdotR = L.dot(-R.dir());
+    double LdotR = L.dot(R.dir().dir());
     double phong = LdotR > ZERO ? pow( LdotR, fin.phong_size ) : 0;
+    const Color& Cspec = fin.metallic > ZERO ? pgm : light.color();
 
     for( size_t C=0; C<3; C++ ) {
-      col_i(C) 
-	+= (scale * light.color()(C) * 
-	    (fin.diffuse * pgm(C) * LdotN
-	     + fin.phong * ( fin.metallic > ZERO ? pgm(C) : light.color()(C) ) 
-	     * phong) );
+      col_i(C) += (scale * light.color()(C) * (fin.diffuse * pgm(C) * LdotN 
+					       + fin.phong * Cspec(C) * phong) );
     }
   }
   
   // calculate using reflected and refracted rays' colors
   Color refl_refr(0,0,0);  // FIXXX - calculation missing
+  refl_refr += fin.reflection * R.color();
 
-  //return (amb + col_i + refl_refr).max(Color(1,1,1));
-  return (amb + col_i ).min(Color(1,1,1));
+  return (amb + col_i + refl_refr ).min(Color(1,1,1));
 }
 
 Scene::Scene(unsigned int N, unsigned int M) : _N(N), _M(M), _global_amb(0,0,0)
@@ -110,15 +115,17 @@ Scene::Scene(unsigned int N, unsigned int M) : _N(N), _M(M), _global_amb(0,0,0)
 
 Scene::~Scene() 
 {
-  for( LightSet::iterator i = _lights.begin(); i != _lights.end(); i++ )
-    delete (*i);
   for( ShapeSet::iterator i = _shapes.begin(); i != _shapes.end(); i++ )
     delete (*i);
 }
 
 void Scene::add_shape( Shape* s )  { _shapes.insert(s); }
-void Scene::add_light( Light* l )  { _lights.insert(l); }
+void Scene::add_light( const Light& l )  { _lights.push_back(l); }
 void Scene::set_cam( const Camera& cam )  { _cam = cam; }
+
+void Scene::set_pxl_width ( unsigned int w )  { _N = w; }
+void Scene::set_pxl_height( unsigned int h )  { _M = h; }
+
 
 void Scene::set_global( SceneEnum param, float val ) {
   switch( param )

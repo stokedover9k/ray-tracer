@@ -54,6 +54,9 @@ class Shape {
   const Finish&  finish (void) const { return _f; }
   const Pigment& pigment(void) const { return _p; }
 
+ protected:
+  virtual bool _intersect( const Ray& inc, Ray& ip ) const;
+
  private:
   Matrix  _t, _inv_t;
   Pigment _p;

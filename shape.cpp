@@ -17,15 +17,15 @@ Finish::Finish( float ambient_,
     metallic(metallic_), reflection(reflection_) 
 {  }
 
-bool Shape::intersect( const Ray& inc, Ray& hit_point ) const 
+bool Shape::intersect( const Ray& inc, Ray& ip ) const 
 {
-  throw "Shape::intersect(): implementation missing.";
+  Ray hit;
+  bool success = _intersect( Ray(inc).transform( inv_transform() ), hit );
+  ip = hit.transform( transform() );
+  return success;
 }
 
-/**
-Ray Shape::reflection_ray( const Ray& inc, const Ray ip ) const 
-{
-  return Ray( ip.origin(), 
-	      inc.dir() - 2 * ip.dir() * ( inc.dir().dot(ip.dir()) ) );
+bool Shape::_intersect( const Ray& inc, Ray& ip ) const {
+  throw "Shape::intersect(const Ray&, Ray&): implementation missing.";
 }
-//**/
+

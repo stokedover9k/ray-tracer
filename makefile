@@ -1,7 +1,7 @@
 OBJS = main.o \
 	parse.o tokens.o vecmath.o tga.o \
 	scene.o light.o camera.o ray.o \
-	shape.o sphere.o box.o cylinder.o
+	shape.o sphere.o box.o cylinder.o polygon.o
 CC = g++
 CFLAGS = -c
 LFLAGS = 
@@ -23,7 +23,7 @@ vecmath.o: vecmath.cpp vecmath.h
 shape.o: shape.cpp shape.h ray.h headers.h
 	$(CC) $(CFLAGS) $<
 
-scene.o: scene.cpp scene.h shape.h sphere.h ray.h light.h headers.h
+scene.o: scene.cpp scene.h shape.h sphere.h box.h cylinder.h polygon.h ray.h light.h headers.h
 	$(CC) $(CFLAGS) $<
 
 camera.o: camera.cpp camera.h ray.h headers.h
@@ -42,6 +42,9 @@ box.o: box.cpp box.h shape.h ray.h headers.h
 	$(CC) $(CFLAGS) $<
 
 cylinder.o: cylinder.cpp cylinder.h shape.h ray.h headers.h
+	$(CC) $(CFLAGS) $<
+
+polygon.o: polygon.cpp polygon.h shape.h ray.h headers.h
 	$(CC) $(CFLAGS) $<
 
 tga.o: tga.cpp tga.h

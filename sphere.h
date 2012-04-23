@@ -10,7 +10,8 @@ class Sphere : public Shape {
 	  double r        = 1.0,
 	  const Shape& s  = Shape() );
   
-  virtual bool intersect( const Ray& inc, Ray& hit_point ) const;
+ protected:
+  virtual bool _intersect( const Ray& inc, Ray& hit_point ) const;
   
  private:
   Vec3 _l;

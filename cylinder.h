@@ -14,11 +14,12 @@ class Cylinder : public Shape {
 	    double r = 2,
 	    const Shape& s = Shape() );
 
-  virtual bool intersect( const Ray& inc, Ray& hit_point ) const;
-
   /* intersect a circle (radius=1) on the x-y plane. 
    */
   static bool intersect_unit_circle( const Ray& inc, Ray& hit );
+
+ protected:
+  virtual bool _intersect( const Ray& inc, Ray& hit_point ) const;
 
  private:
   

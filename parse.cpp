@@ -377,7 +377,7 @@ namespace SceneParser {
     printf("\n}\n");
   }
 
-  void ParsePolygon() { 
+  void ParsePolygon(Scene& scene) { 
     /* these three variables store information about the polygon */
     int num_vertices;
     struct Vector* vertices;
@@ -399,8 +399,11 @@ namespace SceneParser {
     vertices = (struct Vector*)malloc( sizeof(struct Vector)*num_vertices);
     ParseComma();
 
+    std::list<Vec3> vertex_list = std::list<Vec3>();
     for( vert_cnt = 0; vert_cnt < num_vertices; vert_cnt++) { 
       ParseVector(&(vertices[vert_cnt]));
+      Vec3 v(vertices[vert_cnt].x, vertices[vert_cnt].y, vertices[vert_cnt].z);
+      vertex_list.push_back(v);
       if( vert_cnt < num_vertices-1 ) ParseComma();
     }
     ParseModifiers(&modifiers);
@@ -408,6 +411,7 @@ namespace SceneParser {
 
     /* TODO: assignment to the polygon object fields should happen here;
        for now, we just print the values */
+    scene.add_shape( new Polygon( vertex_list, MakeShape( &modifiers ) ) );
 
     printf("polygon {\n");
     printf("\t%d,\n\t", num_vertices);
@@ -588,9 +592,10 @@ namespace SceneParser {
     if(Token.id != T_COLOR) Error("Error parsing light source: missing color");
     ParseColor(&c);
     ParseRightCurly();
+    
+    scene.add_light( Light(Vec3(pos.x, pos.y, pos.z), 
+			   ::Color((float)c.r, (float)c.g, (float)c.b)));
 
-    scene.add_light(new Light(Vec3(pos.x, pos.y, pos.z), 
-			      ::Color((float)c.r, (float)c.g, (float)c.b)));
     printf("light_source {\n");
     printf("\t"); PrintVect(pos); printf("\n");
     printf("\t"); PrintColor(&c); 
@@ -632,7 +637,7 @@ namespace SceneParser {
     while(Token.id != T_EOF) { 
       switch(Token.id) { 
       case T_CAMERA:   ParseCamera(s);   break;
-      case T_POLYGON:  ParsePolygon();  break;
+      case T_POLYGON:  ParsePolygon(s);  break;
       case T_SPHERE:   ParseSphere(s);   break;
       case T_BOX:      ParseBox(s);      break;
       case T_CYLINDER: ParseCylinder(s); break;

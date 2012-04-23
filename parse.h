@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <math.h> 
+#include <list>
 #include "vecmath.h"
 #include "tokens.h"
 

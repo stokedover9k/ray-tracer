@@ -24,12 +24,12 @@ bool Cylinder::intersect_unit_circle( const Ray& inc, Ray& hit )
   Vec3 v = inc.from() - inc.dir() * Z / z;
   v.z() = 0;
 
-  if( v.l2() > 1+ZERO ) return false;
+  if( v.l2() > 1 ) return false;
   hit.from() = v;
   return true;
 }
 
-bool Cylinder::intersect( const Ray& inc, Ray& hit ) const 
+bool Cylinder::_intersect( const Ray& inc, Ray& hit ) const 
 {
   bool inter1 = false;
   bool inter2 = false;
@@ -37,7 +37,7 @@ bool Cylinder::intersect( const Ray& inc, Ray& hit ) const
 
   const Vec3& axis = Vec3(0,0,1);
 
-  const Ray& r1 = inc.transform( inv_transform() );
+  const Ray& r1 = inc;
   const Ray& r2 = Ray(r1.from() - axis, r1.dir());
   Ray h1, h2, h3;      //hits
   double t1 = DBL_MAX;
@@ -62,10 +62,10 @@ bool Cylinder::intersect( const Ray& inc, Ray& hit ) const
     double ttmp = (-B - sqrt(D)) / 2.0 / A;
     h3.from() = p + ttmp * v;
         
-    if( h3.from().z() > 0-ZERO && h3.from().z() < 1+ZERO ) {
+    if( h3.from().z() > 0 && h3.from().z() < 1 ) {
       t3 = ttmp;
       h3.dir() = Vec3(h3.from().x(), h3.from().y(), 0);
-      if( t3 > ZERO )   inter3 = true;
+      if( t3 > 0 )   inter3 = true;
     }
   }
 
@@ -107,7 +107,6 @@ bool Cylinder::intersect( const Ray& inc, Ray& hit ) const
     }
   }
 
-  hit = hit.transform( transform() );
   return inter1 || inter2 || inter3;
 }
 

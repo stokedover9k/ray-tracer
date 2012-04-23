@@ -9,13 +9,14 @@
 #include "sphere.h"
 #include "box.h"
 #include "cylinder.h"
+#include "polygon.h"
 
 #include <set>
 #include <list>
 #include <cmath>
 
 class Scene {
-  typedef std::set<Light*> LightSet;
+  typedef std::list<Light> LightSet;
   typedef std::set<Shape*> ShapeSet;
   
  public:
@@ -27,10 +28,13 @@ class Scene {
   ~Scene();
 
   void add_shape( Shape* );
-  void add_light( Light* );
+  void add_light( const Light& );
   void set_cam( const Camera& cam );
+  void set_pxl_width ( unsigned int w );
+  void set_pxl_height( unsigned int h );
   void set_global( SceneEnum param, float val );
   float get_global( SceneEnum param ) const;
+  float aspect_ratio(void) const { return _cam.a_ratio(); }
 
   bool trace_ray( const Ray&, Color& color, size_t depth=0 );
 
@@ -40,7 +44,7 @@ class Scene {
   const Shape* intersect_all( const Ray& ray, Ray& intersection ) const;
   Color calculate_lighting( const Vec3& inc_dir,
 			    const Ray& normal,
-			    const Vec3& reflect_dir,
+			    const Ray& reflected_ray,
 			    const Shape* shape_ptr,
 			    const LightSet& visible_lights ) const;
 
