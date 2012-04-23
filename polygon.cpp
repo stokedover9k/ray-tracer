@@ -5,7 +5,6 @@ Polygon::Polygon( const VtxList& verts, const Shape& s )
 { 
   if( verts.size() < 3 ) throw "Polygon::Polygon(const std::list<Vert3>&, "
 			   "const Shape&): less than 3 vertices given";
-  std::cout << normal() << std::endl;
 }
 
 bool Polygon::_intersect( const Ray& inc, Ray& ip ) const {
@@ -28,15 +27,14 @@ bool Polygon::_intersect( const Ray& inc, Ray& ip ) const {
     
     /*
     if( (v1(Y) - v2(Y))*(hit(X) - v1(X)) + 
-	(v2(X) - v1(X))*(hit(Y) - v1(Y)) > 0 ) {
-    */
-    if( cross((v2 - v1), (hit - v1)).dot(norm) <= 0 ) {
+	(v2(X) - v1(X))*(hit(Y) - v1(Y)) > 0 ) {         //*/
+    if( cross((v2 - v1), (hit - v1)).dot(norm) <= 0 ) { 
       return false;
     }
     v1 = v2;
   } while( v_itr != _verts.end() );
 
-  ip = Ray(hit, norm);
+  ip = Ray(hit, norm.dot(inc.dir()) > 0 ? -norm : norm);
   return true;
 }
 

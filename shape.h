@@ -42,7 +42,7 @@ class Shape {
 	 float ior                = 1.0 );
 
   // @param ip: origin at the intersection and direction as the normal
-  virtual bool intersect( const Ray& inc, Ray& ip ) const;
+  bool intersect( const Ray& inc, Ray& ip ) const;
   
   //Ray reflection_ray( const Ray& inc, const Ray ip ) const;
 

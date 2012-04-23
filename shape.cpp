@@ -19,10 +19,11 @@ Finish::Finish( float ambient_,
 
 bool Shape::intersect( const Ray& inc, Ray& ip ) const 
 {
-  Ray hit;
-  bool success = _intersect( Ray(inc).transform( inv_transform() ), hit );
-  ip = hit.transform( transform() );
-  return success;
+  if( this->_intersect( Ray(inc).transform( inv_transform() ), ip ) ) {
+    ip = ip.transform( transform() );
+    return true;
+  }
+  return false;
 }
 
 bool Shape::_intersect( const Ray& inc, Ray& ip ) const {
