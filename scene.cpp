@@ -1,6 +1,6 @@
 #include "scene.h"
 
-bool Scene::trace_ray( const Ray& ray, Color& color, size_t depth )
+bool Scene::trace_ray( Ray& ray, float ior, size_t depth, const Shape* in_shape)
 {
   if( depth == 0 ) return false;
   //---------------------------------------------------------------------------
@@ -37,12 +37,23 @@ bool Scene::trace_ray( const Ray& ray, Color& color, size_t depth )
 	  }
       }
 
-    Ray R( ray.reflection(ip) );
-    Color R_color(0,0,0);
-    trace_ray( R, R_color, depth-1);
-    R.color() = R_color;
+    // calculate reflection
+    Ray Refl( ray.reflection(ip) );
+    Refl.color() = Color(0,0,0);
+    trace_ray( Refl, ior, depth-1, in_shape);
+
+    // calculate refraction
+    Ray Refr;
+    const double outer_ior = 1.0;  // or is it ???????
+    const double post_ior = shape == in_shape ? outer_ior : shape->ior();
+    if( shape->pigment().w() > 0 &&
+	refraction( ray.dir(), ip.dir(), Refr.dir(), ior, post_ior ) )
+      {
+	Refr.from() = ip.from() + ZERO * ray.dir() + ZERO * Refr.dir();
+	trace_ray(Refr, post_ior, depth-1);
+      }
     
-    color = calculate_lighting(ray.dir(), ip, R, shape, visible);
+    ray.color() = calculate_lighting(ray.dir(), ip, Refl, Refr, shape, visible);
     return true;
   }
   
@@ -72,17 +83,19 @@ const Shape* Scene::intersect_all( const Ray& inc, Ray& nearest_ip ) const {
   return nearest_s;
 }
 
-Color Scene::calculate_lighting( const Vec3& V, const Ray& N, const Ray& R,
+Color Scene::calculate_lighting( const Vec3& V, const Ray& N, 
+				 const Ray& Refl, const Ray& Refr,
 				 const Shape* shape_p, 
 				 const LightSet& visible ) const {
-  //if( V.dot(N.dir()) > 0 ) return Color(0.2, 0.2, 0.2);
 
   const Finish&  fin = (shape_p)->finish();
   const Pigment& pgm = (shape_p)->pigment();
 
   Color amb(0,0,0);
+  Color trans(0,0,0);
   for( size_t C = 0; C < 3; C++ ) {
     amb(C) = (1 - pgm.w()) * fin.ambient * pgm(C) * _global_amb(C);
+    trans(C) += pgm.w() * pgm(C) * Refr.color()(C);
   }
 
   Color col_i(0,0,0);
@@ -93,7 +106,7 @@ Color Scene::calculate_lighting( const Vec3& V, const Ray& N, const Ray& R,
     const Vec3& L = (light.loc() - N.from()).dir();
     double scale = 1.0 - pgm.w();
     double LdotN = L.dot(N.dir());   if( LdotN < ZERO ) LdotN = 0;
-    double LdotR = L.dot(R.dir().dir());
+    double LdotR = L.dot(Refl.dir().dir());
     double phong = LdotR > ZERO ? pow( LdotR, fin.phong_size ) : 0;
     const Color& Cspec = fin.metallic > ZERO ? pgm : light.color();
 
@@ -104,8 +117,9 @@ Color Scene::calculate_lighting( const Vec3& V, const Ray& N, const Ray& R,
   }
   
   // calculate using reflected and refracted rays' colors
-  Color refl_refr(0,0,0);  // FIXXX - calculation missing
-  refl_refr += fin.reflection * R.color();
+  Color refl_refr(0,0,0);  
+  refl_refr += Refl.color() * fin.reflection;
+  refl_refr += trans;
 
   return (amb + col_i + refl_refr ).min(Color(1,1,1));
 }
@@ -167,4 +181,15 @@ Ray Scene::pixel_ray( unsigned int i, unsigned int j )
 		   + _cam.view_dir() * n );
 
   return Ray( _cam.loc(), (pxl_center.dir()) );
+}
+
+bool Scene::refraction( const Vec3& V, const Vec3& N, 
+			Vec3& T, double ior1, double ior2 ) const {
+  const double n = ior1 / ior2;
+  const double vdotn = -V.dot(N);
+  const double D = n * n * (1.0 - vdotn*vdotn);
+  if( D > 1.0 ) return false;
+
+  T = (n * V + (n * vdotn - sqrt( 1.0 - D)) * N).dir();
+  return true;
 }

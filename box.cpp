@@ -24,7 +24,7 @@ bool Box::_intersect( const Ray& inc, Ray& hit ) const {
     Vec3 q1 = inc.from() + inc.dir() * D1;
     Vec3 q2 = inc.from() + inc.dir() * D2;
   
-    if( D1 < min_d &&
+    if( std::max(D1, -D1) < min_d &&
 	q1(x) >= _c1(x) && q1(x) <= _c2(x) && 
 	q1(y) >= _c1(y) && q1(y) <= _c2(y) ) {
 
@@ -34,7 +34,7 @@ bool Box::_intersect( const Ray& inc, Ray& hit ) const {
       min_d = D1;
     }
 
-    if( D2 < min_d && 
+    if( std::max(D2, -D2) < min_d && 
 	q2(x) >= _c1(x) && q2(x) <= _c2(x) && 
 	q2(y) >= _c1(y) && q2(y) <= _c2(y) ) {
 

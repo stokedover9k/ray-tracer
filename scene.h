@@ -36,7 +36,11 @@ class Scene {
   float get_global( SceneEnum param ) const;
   float aspect_ratio(void) const { return _cam.a_ratio(); }
 
-  bool trace_ray( const Ray&, Color& color, size_t depth=0 );
+  bool trace_ray( Ray&, float ior, size_t depth, 
+		  const Shape* refracting_through = NULL);
+
+  bool refraction( const Vec3& inc, const Vec3& normal, 
+		   Vec3& refraction, double ior_from, double ior_to) const;
 
   Ray pixel_ray( unsigned int i, unsigned int j );
 
@@ -45,6 +49,7 @@ class Scene {
   Color calculate_lighting( const Vec3& inc_dir,
 			    const Ray& normal,
 			    const Ray& reflected_ray,
+			    const Ray& refracted_ray,
 			    const Shape* shape_ptr,
 			    const LightSet& visible_lights ) const;
 

@@ -54,6 +54,10 @@ class Shape {
   const Finish&  finish (void) const { return _f; }
   const Pigment& pigment(void) const { return _p; }
 
+  float ior(void) const { return _ior; }
+  bool refraction( const Ray& inc, const Ray& normal, 
+		   Ray& refraction, float from_ior = 1.0) const;
+
  protected:
   virtual bool _intersect( const Ray& inc, Ray& ip ) const;
 
