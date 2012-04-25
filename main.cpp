@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
       for( int j=0; j<Params::scr_height; j++ ) {
 	for( int i=0; i<Params::scr_width; i++ ) {
 	  Ray r = scene.pixel_ray(i, j);
-	  scene.trace_ray( r, 1.0, Params::max_ray_depth );
+	  scene.trace_ray( r, Params::max_ray_depth );
 	  pxl_ptr = storePixel(pxl_ptr, r.color());
 	}
       }

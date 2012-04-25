@@ -1,6 +1,8 @@
 #ifndef __SCENE_H__
 #define __SCENE_H__
 
+#define DEF_IOR 1.0
+
 #include "headers.h"
 
 #include "camera.h"
@@ -16,8 +18,15 @@
 #include <cmath>
 
 class Scene {
+  struct compare_ior {
+    bool operator() (const Shape* a, const Shape* b) 
+    { if( a->ior() == b->ior() ) return a < b;
+      return a->ior() < b->ior(); }
+  };
+
   typedef std::list<Light> LightSet;
   typedef std::set<Shape*> ShapeSet;
+  typedef std::set<const Shape*, Scene::compare_ior> RefrStack;
   
  public:
   enum SceneEnum {
@@ -36,8 +45,8 @@ class Scene {
   float get_global( SceneEnum param ) const;
   float aspect_ratio(void) const { return _cam.a_ratio(); }
 
-  bool trace_ray( Ray&, float ior, size_t depth, 
-		  const Shape* refracting_through = NULL);
+  bool trace_ray( Ray&, size_t depth, 
+		  const Shape* going_through = NULL);
 
   bool refraction( const Vec3& inc, const Vec3& normal, 
 		   Vec3& refraction, double ior_from, double ior_to) const;
@@ -54,13 +63,28 @@ class Scene {
 			    const LightSet& visible_lights ) const;
 
  private:
+  //
+  // physically present in the scene
+  //
   LightSet _lights;
   ShapeSet _shapes;
   Camera   _cam;
 
-  Color _global_amb; //ambient light in the scene
+  //
+  // structure to handle refraction indices of overlapping objects
+  //
+  RefrStack _R_stk;
 
-  unsigned int _N, _M;
+  //
+  // global parameters of the scene
+  //
+  Color _global_amb;        //ambient light
+
+  //
+  // parameters for the ray tracer
+  //
+  unsigned int _N, _M;      //pixel width and height
+
 };
 
 #endif

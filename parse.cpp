@@ -356,25 +356,14 @@ namespace SceneParser {
     ParseTransform(&transform);
     ParseRightCurly();
 
-    /* TODO: assignment to the camera object fields should happen here;
-       for now, we just print the values */
-
     Camera c;
-    if( loc_b )    c.loc() = Vec3(location.x, location.y, location.z);
-    if( right_b )  c.right() = Vec3(right.x, right.y, right.z);
-    if( up_b )     c.up() = Vec3(up.x, up.y, up.z);
-    if( look_b )   c.look_at() = Vec3(look_at.x, look_at.y, look_at.z);
-    if( angle_b )  c.angle() = angle*180.0/M_PI;
+    if( loc_b   )  c.loc()     = Vec3(location.x, location.y, location.z);
+    if( right_b )  c.right()   = Vec3(right.x, right.y, right.z);
+    if( up_b    )  c.up()      = Vec3(up.x, up.y, up.z);
+    if( look_b  )  c.look_at() = Vec3(look_at.x, look_at.y, look_at.z);
+    if( angle_b )  c.angle()   = angle*180.0/M_PI;
     scene.set_cam( c );
   
-    printf("camera { \n");
-    printf("\tlocation ");   PrintVect(location);   printf("\n");
-    printf("\tright ");      PrintVect(right);      printf("\n");
-    printf("\tup ");         PrintVect(up);         printf("\n");
-    printf("\tangle %.3g\n", angle*180.0/M_PI);
-    printf("\tlook_at ");   PrintVect(look_at);   printf("\n");
-    printf("\tmatrix "); PrintMatrix4d(transform);
-    printf("\n}\n");
   }
 
   void ParsePolygon(Scene& scene) { 
@@ -409,19 +398,7 @@ namespace SceneParser {
     ParseModifiers(&modifiers);
     ParseRightCurly();
 
-    /* TODO: assignment to the polygon object fields should happen here;
-       for now, we just print the values */
     scene.add_shape( new Polygon( vertex_list, MakeShape( &modifiers ) ) );
-
-    printf("polygon {\n");
-    printf("\t%d,\n\t", num_vertices);
-    for( i = 0; i < num_vertices-1; i++) {
-      PrintVect(vertices[i]); printf(",");
-    }
-    PrintVect(vertices[num_vertices-1]); 
-    printf("\n");
-    PrintModifiers(&modifiers);
-    printf("\n}\n");
   }
 
   void ParseSphere(Scene& scene) { 
@@ -440,15 +417,6 @@ namespace SceneParser {
 
     ParseModifiers(&modifiers);
     ParseRightCurly();
-
- 
-    /* TODO: assignment to the sphere object fields should happen here;
-       for now, we just print the values */
-
-    printf("sphere {\n\t");
-    PrintVect(center); printf(", %.3g\n", radius);
-    PrintModifiers(&modifiers);
-    printf("\n}\n");
 
     scene.add_shape( new Sphere( Vec3(center.x, center.y, center.z),
 				 radius,
@@ -471,14 +439,6 @@ namespace SceneParser {
     ParseModifiers(&modifiers);
     ParseRightCurly();
  
-    /* TODO: assignment to the box object fields should happen here;
-       for now, we just print the values */
-
-    printf("box {\n\t");
-    PrintVect(corner1); printf(", "); PrintVect(corner2);
-    PrintModifiers(&modifiers);
-    printf("\n}\n");
-
     scene.add_shape( new Box( Vec3(corner1.x, corner1.y, corner1.z),
 			      Vec3(corner2.x, corner2.y, corner2.z),
 			      MakeShape( &modifiers ) ) );
@@ -503,15 +463,6 @@ namespace SceneParser {
     ParseModifiers(&modifiers);
     ParseRightCurly();
  
-    /* TODO: assignment to the cylinder object fields should happen here;
-       for now, we just print the values */
-
-    printf("cylinder {\n\t");
-    PrintVect(base_point); printf(", "); 
-    PrintVect(cap_point); printf(", %.3g\n", radius); 
-    PrintModifiers(&modifiers);
-    printf("\n}\n");
-
     scene.add_shape( new Cylinder( Vec3(base_point.x, base_point.y, base_point.z),
 				   Vec3(cap_point.x, cap_point.y, cap_point.z),
 				   radius,
@@ -595,11 +546,6 @@ namespace SceneParser {
     
     scene.add_light( Light(Vec3(pos.x, pos.y, pos.z), 
 			   ::Color((float)c.r, (float)c.g, (float)c.b)));
-
-    printf("light_source {\n");
-    printf("\t"); PrintVect(pos); printf("\n");
-    printf("\t"); PrintColor(&c); 
-    printf("\n}\n");
   } 
 
   void ParseGlobalSettings(Scene& scene) { 
@@ -620,9 +566,6 @@ namespace SceneParser {
       } else         
         Error("error parsing default settings: unexpected token");
     }
-    printf("global_settings {\n");
-    printf("\tambient_light {"); PrintColor(&ambient);
-    printf("\n}\n");
 
     scene.set_global(Scene::GLOBAL_AMBIENT_R, ambient.r);
     scene.set_global(Scene::GLOBAL_AMBIENT_G, ambient.g);

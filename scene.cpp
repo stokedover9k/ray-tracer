@@ -1,6 +1,25 @@
 #include "scene.h"
 
-bool Scene::trace_ray( Ray& ray, float ior, size_t depth, const Shape* in_shape)
+//
+// constructor
+//
+Scene::Scene(unsigned int N, unsigned int M) 
+  : _N(N), _M(M), _global_amb(0,0,0), _R_stk()
+{  }
+
+//
+// destructor
+//
+Scene::~Scene() 
+{
+  for( ShapeSet::iterator i = _shapes.begin(); i != _shapes.end(); i++ )
+    delete (*i);
+}
+
+//
+// trace ray
+//
+bool Scene::trace_ray( Ray& ray, size_t depth, const Shape* in_shape)
 {
   if( depth == 0 ) return false;
   //---------------------------------------------------------------------------
@@ -40,17 +59,33 @@ bool Scene::trace_ray( Ray& ray, float ior, size_t depth, const Shape* in_shape)
     // calculate reflection
     Ray Refl( ray.reflection(ip) );
     Refl.color() = Color(0,0,0);
-    trace_ray( Refl, ior, depth-1, in_shape);
+    trace_ray( Refl, depth-1, in_shape);
 
     // calculate refraction
     Ray Refr;
-    const double outer_ior = 1.0;  // or is it ???????
-    const double post_ior = shape == in_shape ? outer_ior : shape->ior();
-    if( shape->pigment().w() > 0 &&
-	refraction( ray.dir(), ip.dir(), Refr.dir(), ior, post_ior ) )
+    if( shape->pigment().w() > 0 )   // if hit shape is transparent
       {
-	Refr.from() = ip.from() + ZERO * ray.dir() + ZERO * Refr.dir();
-	trace_ray(Refr, post_ior, depth-1);
+	const Shape* enter_shape = NULL;
+	const Shape* exit_shape  = NULL;
+
+	if( _R_stk.erase(shape) )
+	  exit_shape  = shape;
+	else {
+	  enter_shape = shape;
+	  _R_stk.insert(shape);
+	}
+
+	// if no TOTAL INTERNAL REFRACTION
+	if ( refraction( ray.dir(), ip.dir(), Refr.dir(), 
+			 in_shape ? in_shape->ior() : DEF_IOR, 
+			 _R_stk.size() > 0 ? (*_R_stk.rbegin())->ior() : DEF_IOR )
+	     ) {
+	  Refr.from() = ip.from() + ZERO * ray.dir() + ZERO * Refr.dir();
+	  trace_ray(Refr, depth-1, _R_stk.size() > 0 ? *_R_stk.rbegin() : NULL);
+	}
+
+	if( exit_shape  ) _R_stk.insert(exit_shape);
+	if( enter_shape ) _R_stk.erase(enter_shape);
       }
     
     ray.color() = calculate_lighting(ray.dir(), ip, Refl, Refr, shape, visible);
@@ -124,15 +159,6 @@ Color Scene::calculate_lighting( const Vec3& V, const Ray& N,
   return (amb + col_i + refl_refr ).min(Color(1,1,1));
 }
 
-Scene::Scene(unsigned int N, unsigned int M) : _N(N), _M(M), _global_amb(0,0,0)
-{  }
-
-Scene::~Scene() 
-{
-  for( ShapeSet::iterator i = _shapes.begin(); i != _shapes.end(); i++ )
-    delete (*i);
-}
-
 void Scene::add_shape( Shape* s )  { _shapes.insert(s); }
 void Scene::add_light( const Light& l )  { _lights.push_back(l); }
 void Scene::set_cam( const Camera& cam )  { _cam = cam; }
@@ -193,3 +219,4 @@ bool Scene::refraction( const Vec3& V, const Vec3& N,
   T = (n * V + (n * vdotn - sqrt( 1.0 - D)) * N).dir();
   return true;
 }
+

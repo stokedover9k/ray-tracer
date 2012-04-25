@@ -3,7 +3,6 @@
 Box::Box( const Vec3& c1, const Vec3& c2, const Shape& s ) 
   : Shape(s),  _c1(c1), _c2(c2)
 { 
-  std::cout << c1 << " -> " << c2 << " : " << c1.min(c2) << std::endl;
   if( c1.min(c2) != c1 )
     throw "Box::Box(const Vec3&, const Vec3&): not all components of corner_1 "
       "are smaller than those of corner_2.";
