@@ -7,8 +7,21 @@
 #include "tga.h"
 
 #define SCREEN_W 600
-#define SCREEN_H 450
 #define MAX_RAY_DEPTH 1
+
+const char* USAGE = 
+  "Usage: tracer SCENE_FILE [PARAMS] \n"
+  "\n"
+  "List of parameters: \n"
+  " param |   type    |    description                            | default\n"
+  "  -w   |  integer  |  Width (in pixels) of the output image    |  600\n"
+  "  -h   |  integer  |  Height (in pixels) of the output image   | ~~varied\n"
+  "  -d   |  integer  |  Maximum ray reflection/refraction depth  |  1\n"
+  "  -o   | file name |  Output image filename                    | \"out.tga\"\n"
+  "\n"
+  "WIDTH and HEIGHT of the output image:\n"
+  "  If only one of the default values is overwritten, the other is adjusted\n"
+  "  to match the aspect ratio specified by the input file.";
 
 using std::cout;
 using std::cerr;
@@ -27,30 +40,27 @@ namespace ARGS {
 
 namespace Params {
   unsigned int scr_width  = SCREEN_W;
-  unsigned int scr_height = SCREEN_H;
+  unsigned int scr_height = 1;
   size_t max_ray_depth = MAX_RAY_DEPTH;
   const char* input_file_name = NULL;
   const char* output_file_name = "out.tga";
 };
 
 void parse_args(int argc, char *argv[], const Scene& scene) {
-  bool resized_screen  = false;
+  bool resized_w = false;
+  bool resized_h = false;
   for( int argn = ARGS::OPTIONAL; argn < argc; argn++ ) 
     {
       if( strcmp(argv[argn], "-w") == 0 ) {
 	if( ++argn == argc ) throw "pixel WIDTH indicated, but not provided.";
 	Params::scr_width = atoi(argv[argn]);
-	if( !resized_screen ) 
-	  Params::scr_height = Params::scr_width * (scene.aspect_ratio()+ZERO);
-	resized_screen = true;
+	resized_w = true;
       } 
 
       else if( strcmp(argv[argn], "-h") == 0 ) {
 	if( ++argn == argc ) throw "pixel HEIGHT indicated, but not provided.";
 	Params::scr_height = atoi(argv[argn]);
-	if( !resized_screen )
-	  Params::scr_width = Params::scr_height / (scene.aspect_ratio()-ZERO);
-	resized_screen = true;
+	resized_h = true;
       }
 
       else if( strcmp(argv[argn], "-o") == 0 ) {
@@ -58,7 +68,7 @@ void parse_args(int argc, char *argv[], const Scene& scene) {
 	Params::output_file_name = argv[argn];
       }
 
-      else if( strcmp(argv[argn], "-r") == 0 ) {
+      else if( strcmp(argv[argn], "-d") == 0 ) {
 	if( ++argn == argc ) throw "MAX RAY DEPTH indicated, but not provided";
 	Params::max_ray_depth = atoi(argv[argn]);
       }
@@ -67,6 +77,11 @@ void parse_args(int argc, char *argv[], const Scene& scene) {
 	throw "unknown argument.";
       }
     }
+
+  if( !resized_h ) 
+    Params::scr_height = Params::scr_width * (scene.aspect_ratio()+ZERO);
+  else if( !resized_w )
+    Params::scr_width = Params::scr_height / (scene.aspect_ratio()-ZERO);
 
   if( Params::scr_width     == 0 ) throw "pixel WIDTH set to 0";
   if( Params::scr_height    == 0 ) throw "pixel HEIGHT set to 0";
@@ -96,11 +111,12 @@ GLubyte * storePixel(GLubyte *pxl_ptr, const Color& c) {
 int main(int argc, char* argv[]) 
 {
   if( argc <= ARGS::SCENE_DESCR_FILE ) {
-    cerr << "ERROR: missing scene description file.\nExiting (0)." << endl;
+    cerr << "ERROR: missing scene description file.\n\n"
+	 << USAGE << "\nExiting (0)." << endl;
     exit(0);
   }
 
-  Scene scene(Params::scr_width, Params::scr_height);
+  Scene scene;
   GLubyte *pixels;
   FILE *outfile;
 
@@ -117,8 +133,8 @@ int main(int argc, char* argv[])
     }
   catch (const char* e) 
     {
-      cerr << "ERROR: (while parsing and creating scene) " << e << "\nExiting(1)"
-	   << endl;
+      cerr << "ERROR: (while parsing and creating scene) " << e << "\n\n"
+	   << USAGE << "\nExiting(1)" << endl;
       exit(1);
     }
   catch (...) 
@@ -134,7 +150,8 @@ int main(int argc, char* argv[])
     {
       parse_args(argc, argv, scene);
 
-      pixels = (GLubyte *)malloc(Params::scr_width * Params::scr_height * 3 * sizeof(GLubyte));
+      pixels = (GLubyte *)malloc(Params::scr_width * Params::scr_height 
+				 * 3 * sizeof(GLubyte));
       if( pixels == NULL ) throw "Failed to allocate memory for the pixel map";
 
       outfile = fopen( Params::output_file_name, "wb" );
@@ -145,7 +162,8 @@ int main(int argc, char* argv[])
     }
   catch (const char* e)
     {
-      cerr << "ERROR: (while argument parsing and setup) " << e << ".\nExiting (0)." << endl;
+      cerr << "ERROR: (while argument parsing and setup) " << e << "\n\n"
+	   << USAGE << "\nExiting (0)." << endl;
       exit(0);
     }
 

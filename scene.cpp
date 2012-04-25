@@ -3,8 +3,8 @@
 //
 // constructor
 //
-Scene::Scene(unsigned int N, unsigned int M) 
-  : _N(N), _M(M), _global_amb(0,0,0), _R_stk()
+Scene::Scene()
+  : _N(0), _M(0), _global_amb(0,0,0), _R_stk()
 {  }
 
 //
@@ -80,7 +80,7 @@ bool Scene::trace_ray( Ray& ray, size_t depth, const Shape* in_shape)
 		       in_shape ? in_shape->ior() : DEF_IOR, 
 		       _R_stk.size() > 0 ? (*_R_stk.rbegin())->ior() : DEF_IOR ) )
 	{
-	  //Refr.from() = ip.from() + ZERO * ray.dir() + ZERO * Refr.dir();
+	  Refr.from() = ip.from() + ZERO * ray.dir() + ZERO * Refr.dir();
 	  trace_ray(Refr, depth-1, _R_stk.size() > 0 ? *_R_stk.rbegin() : NULL);
 	}
 
@@ -116,6 +116,7 @@ const Shape* Scene::intersect_all( const Ray& inc, Ray& nearest_ip ) const {
       }
     }
   
+  nearest_ip.from() += ZERO * nearest_ip.dir();
   return nearest_s;
 }
 

@@ -1,3 +1,4 @@
+EXECUTABLE = tracer
 OBJS = main.o \
 	parse.o tokens.o vecmath.o tga.o \
 	scene.o light.o camera.o ray.o \
@@ -8,8 +9,8 @@ LFLAGS =
 
 
 
-a.out: $(OBJS)
-	$(CC) $(LFLAGS) $(OBJS)
+$(EXECUTABLE): $(OBJS)
+	$(CC) $(LFLAGS) $(OBJS) -o $(EXECUTABLE)
 
 parse.o: parse.cpp tokens.h parse.h vecmath.h scene.h camera.h light.h
 	$(CC) $(CFLAGS) $<
@@ -56,4 +57,4 @@ main.o: main.cpp parse.h tga.o scene.h headers.h
 
 
 clean:
-	rm -f $(OBJS) a.out *.h.gch
+	rm -f $(OBJS) $(EXECUTABLE) *.h.gch

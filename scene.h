@@ -33,7 +33,7 @@ class Scene {
     GLOBAL_AMBIENT_R, GLOBAL_AMBIENT_G, GLOBAL_AMBIENT_B,
   };
 
-  Scene(unsigned int N, unsigned int M);
+  Scene();
   ~Scene();
 
   void add_shape( Shape* );
