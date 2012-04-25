@@ -105,10 +105,6 @@ bool Cylinder::_intersect( const Ray& inc, Ray& hit ) const
     }
   }
   
-  if( inter1 || inter2 || inter3 ) {
-    hit.from() += hit.dir() * ZERO;
-    return true;
-  }
-  return false;
+  return inter1 || inter2 || inter3;
 }
 

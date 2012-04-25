@@ -3,8 +3,10 @@
 Polygon::Polygon( const VtxList& verts, const Shape& s ) 
   : Shape(s), _verts(verts.begin(), verts.end())
 { 
-  if( verts.size() < 3 ) throw "Polygon::Polygon(const std::list<Vert3>&, "
-			   "const Shape&): less than 3 vertices given";
+  if( verts.size() < 3 ) throw "Polygon::Polygon(const std::list<Vec3>&, "
+			   "const Shape&): less than 3 vertices given.";
+  if( s.pigment().w() > 0 ) throw "Polygon::Polygon(const std::list<Vec3>&, "
+			      "const Shape&): 2D object can't be transparent.";
 }
 
 bool Polygon::_intersect( const Ray& inc, Ray& ip ) const {
@@ -15,7 +17,7 @@ bool Polygon::_intersect( const Ray& inc, Ray& ip ) const {
   size_t X, Y, Z;
   const Vec3& norm = normal();
 
-  double t = - (inc.from() - v1).dot(norm) / inc.dir().dot(norm) - ZERO;
+  double t = - (inc.from() - v1).dot(norm) / inc.dir().dot(norm);
   const Vec3& hit = inc.from() + t * inc.dir();
 
   X = std::max(norm(0), -norm(0)) < std::max(norm(1), -norm(1)) ? 0 : 1;
@@ -24,10 +26,6 @@ bool Polygon::_intersect( const Ray& inc, Ray& ip ) const {
 
   do {
     const Vec3& v2 = *v_itr++;
-    
-    /*
-    if( (v1(Y) - v2(Y))*(hit(X) - v1(X)) + 
-	(v2(X) - v1(X))*(hit(Y) - v1(Y)) > 0 ) {         //*/
     if( cross((v2 - v1), (hit - v1)).dot(norm) <= 0 ) { 
       return false;
     }

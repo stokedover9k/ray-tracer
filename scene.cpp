@@ -40,71 +40,72 @@ bool Scene::trace_ray( Ray& ray, size_t depth, const Shape* in_shape)
   double nearest_dist;
 
   shape = intersect_all( ray, ip );
+  if( !shape )   return false;
 
   // calculate color
-  if( shape ) {
-    LightSet visible;
-    for( LightSet::const_iterator litr = _lights.begin(); 
-	 litr != _lights.end(); litr++ )
-      {
-	Ray tmp_normal;
-	const Light& light = *litr;
-	if( ! intersect_all( Ray(ip.from(), (light.loc() - ip.from()).dir()), 
-			     tmp_normal ) ) 
-	  {
-	    visible.push_back( *litr );
-	  }
+  LightSet visible;
+  for( LightSet::const_iterator litr = _lights.begin(); 
+       litr != _lights.end(); litr++ )
+    {
+      Ray tmp_normal;
+      const Light& light = *litr;
+      if( ! intersect_all( Ray(ip.from(), (light.loc() - ip.from()).dir()), 
+			   tmp_normal ) ) 
+	{
+	  visible.push_back( *litr );
+	}
+    }
+
+  // calculate reflection
+  Ray Refl( ray.reflection(ip) );
+  Refl.color() = Color(0,0,0);
+  trace_ray( Refl, depth-1, in_shape);
+
+  // calculate refraction
+  Ray Refr;
+  if( shape->pigment().w() > 0 )   // if hit shape is transparent
+    {
+      const Shape* enter_shape = NULL;
+      const Shape* exit_shape  = NULL;
+
+      if( _R_stk.erase(shape) )
+	exit_shape  = shape;
+      else {
+	enter_shape = shape;
+	_R_stk.insert(shape);
       }
 
-    // calculate reflection
-    Ray Refl( ray.reflection(ip) );
-    Refl.color() = Color(0,0,0);
-    trace_ray( Refl, depth-1, in_shape);
-
-    // calculate refraction
-    Ray Refr;
-    if( shape->pigment().w() > 0 )   // if hit shape is transparent
-      {
-	const Shape* enter_shape = NULL;
-	const Shape* exit_shape  = NULL;
-
-	if( _R_stk.erase(shape) )
-	  exit_shape  = shape;
-	else {
-	  enter_shape = shape;
-	  _R_stk.insert(shape);
-	}
-
-	// if no TOTAL INTERNAL REFRACTION
-	if ( refraction( ray.dir(), ip.dir(), Refr.dir(), 
-			 in_shape ? in_shape->ior() : DEF_IOR, 
-			 _R_stk.size() > 0 ? (*_R_stk.rbegin())->ior() : DEF_IOR )
-	     ) {
-	  Refr.from() = ip.from() + ZERO * ray.dir() + ZERO * Refr.dir();
+      // if no TOTAL INTERNAL REFRACTION
+      if ( refraction( ray.dir(), ip.dir(), Refr.dir(), 
+		       in_shape ? in_shape->ior() : DEF_IOR, 
+		       _R_stk.size() > 0 ? (*_R_stk.rbegin())->ior() : DEF_IOR ) )
+	{
+	  //Refr.from() = ip.from() + ZERO * ray.dir() + ZERO * Refr.dir();
 	  trace_ray(Refr, depth-1, _R_stk.size() > 0 ? *_R_stk.rbegin() : NULL);
 	}
 
-	if( exit_shape  ) _R_stk.insert(exit_shape);
-	if( enter_shape ) _R_stk.erase(enter_shape);
-      }
+      if( exit_shape  ) _R_stk.insert(exit_shape);
+      if( enter_shape ) _R_stk.erase(enter_shape);
+    }
     
-    ray.color() = calculate_lighting(ray.dir(), ip, Refl, Refr, shape, visible);
-    return true;
-  }
-  
-  return false;
+  ray.color() = calculate_lighting(ray.dir(), ip, Refl, Refr, shape, visible);
+  return true;
 }
 
+//
+// intersect all objects
+//
 const Shape* Scene::intersect_all( const Ray& inc, Ray& nearest_ip ) const {
   const Shape* nearest_s = NULL;
   double nearest_dist;
 
-  for( ShapeSet::iterator i = _shapes.begin(); i != _shapes.end(); i++ )
+  Ray ip;    // tmp intersection point
+  for( ShapeSet::const_iterator i = _shapes.begin(); i != _shapes.end(); i++ )
     {
       const Shape* s = *i;
-      Ray ip;               // intersection point
   
       if( s->intersect( inc, ip ) ) {
+	// check for object "in the same place" or really close
 	if( inc.dir().dot( ip.from() - inc.from()) < ZERO )  continue;
 	double ip_dist = (ip.from() - inc.from()).l2();
 	if( nearest_s == NULL || ip_dist < nearest_dist - ZERO ) {
