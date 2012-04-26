@@ -69,7 +69,7 @@ bool Cylinder::_intersect( const Ray& inc, Ray& hit ) const
     }
   }
 
-  //------ check if caps are closer ------//
+  //------ intersect caps ------//
 
   if( intersect_unit_circle( r1, h1 ) ) {
     h1.dir() = -axis;
@@ -83,6 +83,8 @@ bool Cylinder::_intersect( const Ray& inc, Ray& hit ) const
     t2 = (h2.from() - r2.from()).l2();
     inter2 = true;
   }
+
+  //------ find closest intersection ------//
 
   double min = DBL_MAX-1;
 

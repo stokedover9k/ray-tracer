@@ -42,6 +42,8 @@ bool Scene::trace_ray( Ray& ray, size_t depth, const Shape* in_shape)
   shape = intersect_all( ray, ip );
   if( !shape )   return false;
 
+  ip.from() += ZERO * ip.dir();  // move intersection in front of the surface
+
   // calculate color
   LightSet visible;
   for( LightSet::const_iterator litr = _lights.begin(); 
@@ -80,7 +82,8 @@ bool Scene::trace_ray( Ray& ray, size_t depth, const Shape* in_shape)
 		       in_shape ? in_shape->ior() : DEF_IOR, 
 		       _R_stk.size() > 0 ? (*_R_stk.rbegin())->ior() : DEF_IOR ) )
 	{
-	  Refr.from() = ip.from() + ZERO * ray.dir() + ZERO * Refr.dir();
+	  // move ray position inside the object (past the surface)
+	  Refr.from() = ip.from() - ZERO * ip.dir() + ZERO * Refr.dir();
 	  trace_ray(Refr, depth-1, _R_stk.size() > 0 ? *_R_stk.rbegin() : NULL);
 	}
 
@@ -116,7 +119,7 @@ const Shape* Scene::intersect_all( const Ray& inc, Ray& nearest_ip ) const {
       }
     }
   
-  nearest_ip.from() += ZERO * nearest_ip.dir();
+  nearest_ip.from();
   return nearest_s;
 }
 
