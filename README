@@ -1,0 +1,43 @@
+OS: Linux
+
+COMPILE:
+execute "make" or:
+
+g++ -c tga.cpp
+g++ -c main.cpp
+g++ -c parse.cpp
+g++ -c tokens.cpp 
+g++ -c vecmath.cpp
+g++ -c scene.cpp
+g++ -c light.cpp
+g++ -c camera.cpp
+g++ -c ray.cpp
+g++ -c shape.cpp
+g++ -c sphere.cpp
+g++ -c box.cpp
+g++ -c cylinder.cpp
+g++ -c polygon.cpp
+g++  main.o parse.o tokens.o vecmath.o tga.o scene.o light.o camera.o ray.o shape.o sphere.o box.o cylinder.o polygon.o -o tracer
+
+---------------------------------------------------------------------------------
+
+RUN:
+tracer INPUT_FILE [PARAMS]
+example: ./tracer scene.pov -w 1200 -h 700 -d 7 -o output_file.tga
+
+-w : WIDTH (in pixels) of the output image. If not specified, automatically
+     adjusted to match the aspect ratio wiht given height. If neither width nor
+     height are specified, defaults to 600.
+-h : HEIGHT (in pixels) of the output image. If not specified, automatically
+     adjusted to match the aspect ratio by with given width.
+-d : Maximum reflection/refraction recursive depth. Defaults to 1 (no reflection/
+     refraction).
+-o : Output file name. Defaults to "out.tga".
+
+---------------------------------------------------------------------------------
+
+COMMENTS:
+There seems to be a disagreement in the axis positions in PovRay and OpenGL. This
+program keeps to the OpenGL format where the cross product of x-axis and y-axis
+gives positive z-axis rather than negative. This might be an explanation for the
+different positioning of the PovRay generated images.

@@ -51,8 +51,8 @@ bool Scene::trace_ray( Ray& ray, size_t depth, const Shape* in_shape)
     {
       Ray tmp_normal;
       const Light& light = *litr;
-      if( ! intersect_all( Ray(ip.from(), (light.loc() - ip.from()).dir()), 
-			   tmp_normal ) ) 
+      if(!intersect_all(Ray(ip.from(), (light.loc()-ip.from()).dir()), tmp_normal)
+	 || (tmp_normal.from()-ip.from()).l2() > (light.loc()-ip.from()).l2() ) 
 	{
 	  visible.push_back( *litr );
 	}
