@@ -101,9 +101,9 @@ public:
 
   // componentwise min and max
   CVec3T min( const CVec3T& o ) const
-    { F a =std::min( v[X], o.v[X] );
-      F b =std::min( v[Y], o.v[Y] );
-      F c =std::min( v[Z], o.v[Z] );
+    { F a = std::min( v[X], o.v[X] );
+      F b = std::min( v[Y], o.v[Y] );
+      F c = std::min( v[Z], o.v[Z] );
       return CVec3T( a, b,c); }
   CVec3T max( const CVec3T& o ) const
     { F a = std::max( v[X], o.v[X] );

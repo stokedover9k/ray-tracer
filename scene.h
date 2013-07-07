@@ -55,6 +55,7 @@ class Scene {
 
  protected:
   const Shape* intersect_all( const Ray& ray, Ray& intersection ) const;
+
   Color calculate_lighting( const Vec3& inc_dir,
 			    const Ray& normal,
 			    const Ray& reflected_ray,
